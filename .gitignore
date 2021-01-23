@@ -1,0 +1,7 @@
+*.o
+*.d
+*.swp
+*.elf
+*.bin
+*.adf
+link.map

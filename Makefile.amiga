@@ -1,0 +1,57 @@
+src = $(wildcard src/*.c) \
+	  $(wildcard src/amiga/*.c) \
+	  $(wildcard src/amiga/libc/*.c)
+asrc = $(wildcard src/*.s) \
+	   $(wildcard src/amiga/*.s) \
+	   $(wildcard src/amiga/libc/*.s)
+obj = $(src:.c=.o) $(asrc:.s=.o) 
+dep = $(src:.c=.d)
+
+name = lugburz
+elf = $(name).elf
+bin = $(name).bin
+adf = $(name).adf
+bootblock = boot.bin
+
+tool_prefix = m68k-elf-
+
+CC = $(tool_prefix)gcc
+AS = $(tool_prefix)as
+LD = $(tool_prefix)gcc
+OBJCOPY = $(tool_prefix)objcopy
+
+inc = -Isrc -Isrc/amiga -Isrc/amiga/libc
+
+ASFLAGS = -m68000
+CFLAGS = -m68000 -ffreestanding -nostdinc -fno-builtin -pedantic -Wall -Os $(inc)
+LDFLAGS = -T amiga.ld -Wl,-print-gc-sections -Wl,-Map,link.map -ffreestanding \
+		  -nostdlib -lgcc
+
+$(adf): $(bin) $(bootblock)
+	tools/mk_adf.py $(bootblock) $(bin) $@
+
+$(bin): $(elf)
+	$(OBJCOPY) -O binary $< $@
+
+$(elf): $(obj)
+	$(LD) -o $@ $(obj) $(LDFLAGS)
+
+$(bootblock): src/amiga/boot/boot.o
+	$(OBJCOPY) -O binary $< $@
+
+-include $(dep)
+
+%.d: %.c
+	@$(CPP) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
+
+.PHONY: clean
+clean:
+	rm -f $(obj) src/amiga/boot/boot.o $(bin) $(elf)
+
+.PHONY: cleandep
+cleandep:
+	rm -f $(dep)
+
+.PHONY: run
+run:
+	fs-uae
