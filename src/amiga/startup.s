@@ -19,9 +19,12 @@ super:
 	cmp.l %a0, %a1
 	bne.s 0b
 1:
-	| setup the stack
-	move.l #_stacktop, %sp
+	| setup the stack at the top of (traditional) chipmem for now
+	move.l #0x80000, %sp
 	andi.w #0xf8ff, %sr	| enable interrupts
+
+	| initialize early exception handlers
+	jsr exc_init
 
 	jsr main
 0:	bra.b 0b

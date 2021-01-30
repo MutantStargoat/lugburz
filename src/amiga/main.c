@@ -1,9 +1,11 @@
 #include <string.h>
+#include "amigalib.h"
 #include "hwregs.h"
 #include "copper.h"
 #include "gfx.h"
 #include "game.h"
 #include "serial.h"
+#include "mem.h"
 
 static uint32_t coplist[128];
 
@@ -16,6 +18,10 @@ int main(void)
 
 	ser_init(38400);
 	ser_print("lugburz amiga starting up...\n");
+
+	alib_init();
+
+	init_mem();
 
 	init_gfx();
 

@@ -3,7 +3,7 @@ OUTPUT_ARCH(m68k)
 PROVIDE (_stacktop = 0x80000);
 
 SECTIONS {
-	/* bootblock will load us at 10000h */
+	/* bootblock will load us at 64k */
 	. = 0x10000;
 
 	.startup : { * (.startup); }

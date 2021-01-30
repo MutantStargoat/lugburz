@@ -24,7 +24,7 @@ inc = -Isrc -Isrc/amiga -Isrc/amiga/libc
 
 ASFLAGS = -m68000
 CFLAGS = -m68000 -ffreestanding -nostdinc -fno-builtin -pedantic -Wall -Os $(inc)
-LDFLAGS = -T amiga.ld -Wl,-print-gc-sections -Wl,-Map,link.map -ffreestanding \
+LDFLAGS = -m68000 -T amiga.ld -Wl,-print-gc-sections -Wl,-Map,link.map -ffreestanding \
 		  -nostdlib -lgcc
 
 $(adf): $(bin) $(bootblock)
@@ -55,3 +55,6 @@ cleandep:
 .PHONY: run
 run:
 	fs-uae
+
+disasm: $(elf)
+	$(tool_prefix)objdump -d $< >$@
