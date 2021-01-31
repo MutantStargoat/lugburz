@@ -104,7 +104,7 @@ static int intern_printf(char *buf, size_t sz, const char *fmt, va_list ap)
 	int base = 10;
 	int alt = 0;
 	int fwidth = 0;
-	int padc = ' ';
+	char padc = ' ';
 	int sign = 0;
 	int left_align = 0;	/* not implemented yet */
 	int hex_caps = 0;
@@ -157,7 +157,7 @@ static int intern_printf(char *buf, size_t sz, const char *fmt, va_list ap)
 
 					slen = strlen(conv_buf);
 					for(i=slen; i<fwidth; i++) {
-						bwrite(BUF(buf), SZ(sz), (char*)&padc, 1);
+						bwrite(BUF(buf), SZ(sz), &padc, 1);
 						cnum++;
 					}
 
@@ -178,7 +178,7 @@ static int intern_printf(char *buf, size_t sz, const char *fmt, va_list ap)
 					slen = strlen(str);
 
 					for(i=slen; i<fwidth; i++) {
-						bwrite(BUF(buf), SZ(sz), (char*)&padc, 1);
+						bwrite(BUF(buf), SZ(sz), &padc, 1);
 						cnum++;
 					}
 					bwrite(BUF(buf), SZ(sz), str, slen);

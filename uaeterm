@@ -1,0 +1,9 @@
+#!/bin/sh
+
+port=`cat fs-uae.conf | grep serial_port | awk '{ print $3; }'`
+if [ -z "$port" ]; then
+	echo "fs-uae.conf doesn't include a serial_port config option"
+	exit 1
+fi
+
+socat pty,raw,echo=0,link=$port -,raw,echo=0

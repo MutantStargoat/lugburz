@@ -2,10 +2,16 @@
 #include "serial.h"
 #include "mem.h"
 #include "amigalib.h"
+#include "debug.h"
 
 int init_mem(void)
 {
 	struct alib_memnode *mem;
+
+	printf("chip memory top: %lx\n", (unsigned long)execbase->chipmem_top);
+
+	printf("memlist head node:\n");
+	memdump(execbase->memlist.head, sizeof(struct alib_memnode));
 
 	printf("Memory ranges:\n");
 	mem = execbase->memlist.head;
