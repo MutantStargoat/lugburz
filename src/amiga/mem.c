@@ -9,9 +9,7 @@ int init_mem(void)
 	struct alib_memnode *mem;
 
 	printf("chip memory top: %lx\n", (unsigned long)execbase->chipmem_top);
-
-	printf("memlist head node:\n");
-	memdump(execbase->memlist.head, sizeof(struct alib_memnode));
+	printf("ext memory top: %lx\n", (unsigned long)execbase->extmem_top);
 
 	printf("Memory ranges:\n");
 	mem = execbase->memlist.head;

@@ -23,7 +23,13 @@
 struct alib_memchunk {
 	struct alib_memchunk *next;
 	uint32_t size;
-};
+} __attribute__((packed));
+
+struct alib_intrnode {
+	ALIB_NODE_COMMON(struct alib_intrnode);
+	void *data;
+	void (*code)();
+} __attribute__((packed));
 
 struct alib_memnode {
 	ALIB_NODE_COMMON(struct alib_memnode);
@@ -31,13 +37,13 @@ struct alib_memnode {
 	struct alib_memchunk *freelist;
 	void *start, *end;
 	uint32_t freesz;
-};
+} __attribute__((packed));
 
 struct alib_memlist {
 	struct alib_memnode *head, *tail, *tailpred;
 	uint8_t type;
 	uint8_t pad;
-};
+} __attribute__((packed));
 
 struct alib_library {
 	ALIB_NODE_COMMON(struct alib_library);
@@ -48,13 +54,13 @@ struct alib_library {
 	char *idstr;
 	uint32_t csum;
 	uint16_t nref;
-};
+} __attribute__((packed));
 
 struct alib_intvec {
 	void *data;
 	void (*code)();
-	ALIB_NODE_COMMON(struct alib_intvec);
-};
+	struct alib_intrnode *node;
+} __attribute__((packed));
 
 struct alib_execbase {
 	struct alib_library lib;
@@ -83,7 +89,7 @@ struct alib_execbase {
 
 	struct alib_memlist memlist;
 	/* ... more ... */
-};
+} __attribute__((packed));
 
 struct alib_execbase *execbase;
 
