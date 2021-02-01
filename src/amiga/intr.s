@@ -1,10 +1,7 @@
 | vi:filetype=gas68k:
-	.section .text
+	.include "hwregs.inc"
 
-	.equ DMACON, 0x002
-	.equ VPOSR, 0x004
-	.equ VHPOSR, 0x006
-	.equ COLOR0, 0x180
+	.section .text
 
 	.global exc_init
 exc_init:

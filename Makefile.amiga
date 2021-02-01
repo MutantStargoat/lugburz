@@ -22,7 +22,7 @@ OBJCOPY = $(tool_prefix)objcopy
 
 inc = -Isrc -Isrc/amiga -Isrc/amiga/libc
 
-ASFLAGS = -m68000
+ASFLAGS = -m68000 $(inc)
 CFLAGS = -m68000 -ffreestanding -nostdinc -fno-builtin -pedantic -Wall -Os $(inc)
 LDFLAGS = -m68000 -T amiga.ld -Wl,-print-gc-sections -Wl,-Map,link.map -ffreestanding \
 		  -nostdlib -lgcc
