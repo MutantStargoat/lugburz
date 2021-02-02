@@ -13,4 +13,8 @@ long strtol(const char *str, char **endp, int base);
 void itoa(int val, char *buf, int base);
 void utoa(unsigned int val, char *buf, int base);
 
+void *malloc(size_t sz);
+void *calloc(size_t n, size_t sz);
+void free(void *p);
+
 #endif	/* AMIGA_LIBC_STDLIB_H_ */

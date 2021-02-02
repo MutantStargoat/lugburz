@@ -217,7 +217,7 @@ static void add_range(int pidx, struct memrange *mr)
 	struct memrange *prev, *next, dummy;
 
 	printf("DBG adding free range: %06lx - %06lx to pool %d\n", (unsigned long)mr,
-			(unsigned long)(mr->start + mr->size - (unsigned char*)mr), pidx);
+			(unsigned long)(mr->start + mr->size), pidx);
 
 	dummy.next = pool[pidx];
 	prev = &dummy;
@@ -244,4 +244,16 @@ static void add_range(int pidx, struct memrange *mr)
 	}
 
 	pool[pidx] = dummy.next;
+}
+
+void dbg_memprint(void)
+{
+	struct memrange *mr = pool[POOL_SLOW];
+
+	printf("MEM");
+	while(mr) {
+		printf(" [%lx - %lx]", (unsigned long)mr, (unsigned long)(mr->start + mr->size));
+		mr = mr->next;
+	}
+	putchar('\n');
 }
