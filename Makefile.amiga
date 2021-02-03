@@ -7,6 +7,8 @@ asrc = $(wildcard src/*.s) \
 obj = $(src:.c=.o) $(asrc:.s=.o) 
 dep = $(src:.c=.d)
 
+data = data/titlescreen.bpl data/titlescreen.pal
+
 name = lugburz
 elf = $(name).elf
 bin = $(name).bin
@@ -39,6 +41,8 @@ $(elf): $(obj)
 $(bootblock): src/amiga/boot/boot.o
 	$(OBJCOPY) -O binary $< $@
 
+src/amiga/data.o: src/amiga/data.s $(data)
+
 -include $(dep)
 
 %.d: %.c
@@ -58,3 +62,13 @@ run:
 
 disasm: $(elf)
 	$(tool_prefix)objdump -d $< >$@
+
+tools/png2bpl/png2bpl: tools/png2bpl/main.c
+	$(MAKE) -C tools/png2bpl
+
+# datafiles rules
+%.bpl: %.png tools/png2bpl/png2bpl
+	tools/png2bpl/png2bpl $< >$@
+
+%.pal: %.png tools/png2bpl/png2bpl
+	tools/png2bpl/png2bpl -c $< >$@

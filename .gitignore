@@ -5,3 +5,5 @@
 *.bin
 *.adf
 link.map
+tools/png2bpl/png2bpl
+data/

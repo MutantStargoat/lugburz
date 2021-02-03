@@ -8,8 +8,8 @@
 #include "game.h"
 #include "serial.h"
 #include "mem.h"
-
-static uint32_t coplist[128];
+#include "debug.h"
+#include "data.h"
 
 int main(void)
 {
@@ -25,32 +25,17 @@ int main(void)
 
 	init_mem();
 
-	init_gfx();
-
-	REG_COLOR0 = 0x111;
-	REG_COLOR1 = 0x23c;
-	REG_COLOR2 = 0xc32;
-	REG_COLOR3 = 0x22c;
-	REG_COLOR4 = 0xcc2;
-
-	wait_vblank();
-
-	init_copper(coplist, 32, COPPER_SINGLE);
-	for(i=0; i<NBPL; i++) {
-		uint32_t addr = (intptr_t)bplptr[i];
-		int reg = REGN_BPL1PTH + i * 4;
-		add_copper(COPPER_MOVE(reg, addr >> 16));
-		add_copper(COPPER_MOVE(reg + 2, addr));
-	}
-	add_copper(COPPER_VWAIT(50));
-	add_copper(COPPER_MOVE(REGN_COLOR0, 0xf00));
-	add_copper(COPPER_VWAIT(60));
-	add_copper(COPPER_MOVE(REGN_COLOR0, 0x111));
-	*copperlist_end = COPPER_END;
-
 	game_init();
 
+	setup_gfx(titlescreen_pixels, 768, 256, GFX_5BPL | GFX_ILV);
+
+	for(i=0; i<32; i++) {
+		REG_COLOR_PTR[i] = titlescreen_pal[i];
+	}
+
 	wait_vblank();
+	REG32_COP1LC = (uint32_t)gfx_coplist;
+	REG_COPJMP1 = 0;
 	REG_DMACON = SETBITS(DMA_BPL | DMA_COPPER | DMA_MASTER);
 
 	for(;;) {
