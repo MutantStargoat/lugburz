@@ -6,4 +6,5 @@
 *.adf
 link.map
 tools/png2bpl/png2bpl
+tools/tilegen/tilegen
 data/
