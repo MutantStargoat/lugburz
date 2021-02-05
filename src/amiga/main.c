@@ -13,7 +13,7 @@
 
 int main(void)
 {
-	int i;
+	int i, xscroll = 0;
 
 	REG_INTENA = SETBITS(INTEN_VERTB | INTEN_MASTER);
 	REG_DMACON = CLRBITS(DMA_ALL);
@@ -27,7 +27,7 @@ int main(void)
 
 	game_init();
 
-	setup_gfx(titlescreen_pixels, 768, 256, GFX_5BPL | GFX_ILV);
+	setup_gfx(titlescreen_pixels, 624, 256, GFX_5BPL | GFX_ILV);
 
 	for(i=0; i<32; i++) {
 		REG_COLOR_PTR[i] = titlescreen_pal[i];
@@ -40,7 +40,13 @@ int main(void)
 
 	for(;;) {
 		wait_vblank();
+
+		gfx_scroll(xscroll >> 1, 0);
 		game_draw();
+
+		if(xscroll >> 1 < 624 - 320 - 1) {
+			xscroll++;
+		}
 	}
 	return 0;
 }
