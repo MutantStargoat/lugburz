@@ -4,7 +4,7 @@ dep = $(src:.c=.d)
 bin = tilegen
 
 CFLAGS = -pedantic -Wall -g -MMD
-LDFLAGS = -lGL -lGLU -lglut -lGLEW -lm
+LDFLAGS = -lGL -lGLU -lglut -lGLEW -lm -ltreestore
 
 $(bin): $(obj)
 	$(CC) -o $@ $(obj) $(LDFLAGS)
