@@ -3,7 +3,9 @@ obj = $(src:.c=.o)
 dep = $(src:.c=.d)
 bin = tilegen
 
-CFLAGS = -pedantic -Wall -g -MMD
+warn = -pedantic -Wall -Wno-int-to-pointer-cast
+
+CFLAGS = $(warn) -g -fcommon -MMD
 LDFLAGS = -lGL -lGLU -lglut -lGLEW -lm -ltreestore
 
 $(bin): $(obj)
