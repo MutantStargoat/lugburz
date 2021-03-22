@@ -4,18 +4,18 @@
 #include "tileset.h"
 
 static void cleanup(void);
-static int prepare(int width, int height, struct cellgrid *g);
-static void draw(struct stamp *stamp, int x, int z);
+static int prepare(int width, int height, float fov);
+static void render(int x, int y, uint32_t desc);
+static void show(void);
 
 static struct renderer rend = {
 	"ray",
+	0, 0, 0,
 	cleanup,
-	prepare, draw
+	prepare,
+	render,
+	show
 };
-
-static int xres, yres;
-static struct cellgrid *grid;
-static uint32_t *framebuf;
 
 int regrend_ray(void)
 {
@@ -24,15 +24,20 @@ int regrend_ray(void)
 	return 0;
 }
 
+
 static void cleanup(void)
 {
 }
 
-static int prepare(int width, int height, struct cellgrid *g)
+static int prepare(int width, int height, float fov)
 {
-	return -1;
+	return 0;
 }
 
-static void draw(struct stamp *stamp, int x, int z)
+static void render(int x, int y, uint32_t desc)
+{
+}
+
+static void show(void)
 {
 }

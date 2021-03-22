@@ -8,10 +8,6 @@
 
 #define MAX_TILES	16
 
-struct tile {
-	struct cmesh *mesh;
-};
-
 static struct tile tfloors[MAX_TILES];
 static struct tile tceil[MAX_TILES];
 static struct tile tsides[MAX_TILES];
@@ -135,31 +131,49 @@ int tileset_num_sides(void)
 	return nsides;
 }
 
+struct tile *tileset_floor(int idx)
+{
+	if(idx < 0 || idx >= nfloors) return 0;
+	return tfloors + idx;
+}
+
+struct tile *tileset_ceiling(int idx)
+{
+	if(idx < 0 || idx >= nceil) return 0;
+	return tceil + idx;
+}
+
+struct tile *tileset_side(int idx)
+{
+	if(idx < 0 || idx >= nsides) return 0;
+	return tsides + idx;
+}
+
 void draw_floor(int n)
 {
-	n &= 0xf;
-	if(!tfloors[n].mesh) return;
+	struct tile *tile = tileset_floor(n);
+	if(!tile || !tile->mesh) return;
 
-	cmesh_draw(tfloors[n].mesh);
+	cmesh_draw(tile->mesh);
 }
 
 void draw_ceil(int n)
 {
-	n &= 0xf;
-	if(!tceil[n].mesh) return;
+	struct tile *tile = tileset_ceiling(n);
+	if(!tile || !tile->mesh) return;
 
-	cmesh_draw(tceil[n].mesh);
+	cmesh_draw(tile->mesh);
 }
 
 void draw_side(int dir, int n)
 {
-	n &= 0xf;
-	if(!tsides[n].mesh) return;
+	struct tile *tile = tileset_side(n);
+	if(!tile || !tile->mesh) return;
 
 	glPushMatrix();
 	glRotatef(90 * dir, 0, 1, 0);
 
-	cmesh_draw(tsides[n].mesh);
+	cmesh_draw(tile->mesh);
 
 	glPopMatrix();
 }
@@ -167,10 +181,6 @@ void draw_side(int dir, int n)
 void draw_cell(uint32_t desc)
 {
 	int i;
-
-	if(!(desc & 0x80000000)) {
-		return;
-	}
 
 	draw_floor((desc >> DESC_FLOOR_SHIFT) & 0xf);
 	draw_ceil((desc >> DESC_CEIL_SHIFT) & 0xf);

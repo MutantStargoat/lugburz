@@ -16,8 +16,8 @@ static int parse_args(int argc, char **argv);
 
 static const char *tset_fname;
 
-static int win_width, win_height;
-static float win_aspect;
+int win_width, win_height;
+float win_aspect;
 
 static int bnstate[8];
 static int mouse_x, mouse_y;
@@ -27,7 +27,16 @@ static float cam_theta, cam_phi = 15, cam_dist = 8;
 static int show_grid = 1;
 static int user_view = 1;
 static float vfov = 60;
+static int rwidth = 320;
+static int rheight = 128;
+static int nrows = 4;
+static int ncols = 3;
 
+static int frame;
+static unsigned int *cell_desc;
+static int num_cell_desc;
+
+static struct renderer *rend;
 
 int regrend_gl(void);
 int regrend_ray(void);
@@ -62,25 +71,60 @@ int main(int argc, char **argv)
 
 static int init(void)
 {
+	int i, x, y, num_ceil, num_floor, num_sides;
+	unsigned int *dptr;
+
 	glewInit();
 
 	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-
-	glClearColor(0.2, 0.2, 0.2, 1);
 
 	regrend_gl();
-	regrend_ray();
+	//regrend_ray();
 
 	if(!rendlist) {
 		fprintf(stderr, "no renderers\n");
 		return -1;
 	}
+	rend = rendlist;	/* TODO */
+	if(rend->prepare(rwidth, rheight, vfov) == -1) {
+		fprintf(stderr, "failed to initialize %s renderer\n", rend->name);
+		return -1;
+	}
 
 	if(load_tileset(tset_fname) == -1) {
 		return -1;
+	}
+
+	/* build mask of valid tile descriptors */
+	num_ceil = tileset_num_ceilings();
+	num_floor = tileset_num_floors();
+	num_sides = tileset_num_sides();
+
+	/* num_sides * 2 because we need all variants for both left and far walls */
+	num_cell_desc = ncols * nrows * (num_ceil + num_floor + 2 * num_sides);
+	if(!(cell_desc = malloc(num_cell_desc * sizeof *cell_desc))) {
+		perror("malloc failed");
+		return -1;
+	}
+	dptr = cell_desc;
+
+	for(y=0; y<nrows; y++) {
+		uint32_t rowbits = y << 28;
+		for(x=0; x<ncols; x++) {
+			uint32_t colbits = x << 24;
+			for(i=0; i<num_ceil; i++) {
+				*dptr++ = rowbits | colbits | (i << DESC_CEIL_SHIFT);
+			}
+			for(i=0; i<num_floor; i++) {
+				*dptr++ = rowbits | colbits | (i << DESC_FLOOR_SHIFT);
+			}
+			for(i=0; i<num_sides; i++) {
+				*dptr++ = rowbits | colbits | (i << DESC_W_SHIFT);
+			}
+			for(i=0; i<num_sides; i++) {
+				*dptr++ = rowbits | colbits | (i << DESC_N_SHIFT);
+			}
+		}
 	}
 
 	return 0;
@@ -99,41 +143,24 @@ static void cleanup(void)
 
 static void display(void)
 {
-	float lpos[] = {0, 1, 0, 1};
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	int row, col;
+	uint32_t desc;
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(vfov, win_aspect, 0.5, 500.0);
+	glClearColor(0.12, 0.12, 0.12, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	if(user_view) {
-		glTranslatef(0, 0, -cam_dist);
-		glRotatef(cam_phi, 1, 0, 0);
-		glRotatef(cam_theta, 0, 1, 0);
-	} else {
-		glTranslatef(0, -1, -1);
+	if(frame < num_cell_desc) {
+		desc = cell_desc[frame++];
+		row = (desc >> 28) & 0xf;
+		col = (desc >> 24) & 0xf;
+		desc &= DESC_TILE_MASK;
+
+		printf("rendering %08x at (%d,%d)\n", desc, col, row);
+		rend->render(-col, row, REND_CLEAR | desc);
+		rend->show();
+		save_stamp(rend, "out", col, row, desc);
+		glutPostRedisplay();
 	}
-
-	if(show_grid) {
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_LIGHTING);
-		glLineWidth(2);
-		glBegin(GL_LINES);
-		glColor3f(1, 0, 0);
-		glVertex3f(-1000, 0, 0);
-		glVertex3f(1000, 0, 0);
-		glColor3f(0, 0, 1);
-		glVertex3f(0, 0, -1000);
-		glVertex3f(0, 0, 1000);
-		glEnd();
-		glPopAttrib();
-	}
-
-	glLightfv(GL_LIGHT0, GL_POSITION, lpos);
-
-	draw_cell(0x80001102);
 
 	glutSwapBuffers();
 }

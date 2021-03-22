@@ -6,7 +6,7 @@ bin = tilegen
 warn = -pedantic -Wall -Wno-int-to-pointer-cast
 
 CFLAGS = $(warn) -g -fcommon -MMD
-LDFLAGS = -lGL -lGLU -lglut -lGLEW -lm -ltreestore
+LDFLAGS = -lGL -lGLU -lglut -lGLEW -lm -ltreestore -limago
 
 $(bin): $(obj)
 	$(CC) -o $@ $(obj) $(LDFLAGS)

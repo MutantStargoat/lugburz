@@ -3,23 +3,18 @@
 
 #include <stdint.h>
 
-struct stamp {
-	int x, y, w, h;
-	uint32_t *pixels;
-};
-
-struct cellgrid {
-	int ncols, nrows;
-	uint32_t *desc;
-};
+#define REND_CLEAR	0x40000000
 
 struct renderer {
 	const char *name;
 
-	void (*cleanup)(void);
+	int width, height;
+	uint32_t *framebuf;
 
-	int (*prepare)(int width, int height, struct cellgrid *grid);
-	void (*draw_stamp)(struct stamp *stamp, int x, int z);
+	void (*cleanup)(void);
+	int (*prepare)(int width, int height, float fov);
+	void (*render)(int x, int y, uint32_t desc);
+	void (*show)(void);
 
 	struct renderer *next;
 };
@@ -27,5 +22,7 @@ struct renderer {
 struct renderer *rendlist;
 
 int reg_rend(struct renderer *rend);
+
+int save_stamp(struct renderer *rend, const char *outpath, int x, int y, uint32_t desc);
 
 #endif	/* REND_H_ */
