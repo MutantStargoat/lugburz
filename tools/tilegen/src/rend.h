@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define REND_VFLIP	0x10000000
+#define REND_HFLIP	0x20000000
 #define REND_CLEAR	0x40000000
 
 struct renderer {
@@ -24,5 +26,7 @@ struct renderer *rendlist;
 int reg_rend(struct renderer *rend);
 
 int save_stamp(struct renderer *rend, const char *outpath, int x, int y, uint32_t desc);
+void *vflip_image(void *pixels, int width, int height);
+void *hflip_image(void *pixels, int width, int height);
 
 #endif	/* REND_H_ */

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include "tileset.h"
@@ -30,7 +31,7 @@ static float vfov = 60;
 static int rwidth = 320;
 static int rheight = 128;
 static int nrows = 4;
-static int ncols = 3;
+static int ncols = 5;
 
 static int frame;
 static unsigned int *cell_desc;
@@ -100,8 +101,11 @@ static int init(void)
 	num_floor = tileset_num_floors();
 	num_sides = tileset_num_sides();
 
-	/* num_sides * 2 because we need all variants for both left and far walls */
-	num_cell_desc = ncols * nrows * (num_ceil + num_floor + 2 * num_sides);
+	/* num_sides * 3 because we need all variants for both left/right and far walls
+	 * this is an upper bound, since just below we'll emit descriptors for left
+	 * and right walls at the same time only for the center tile column.
+	 */
+	num_cell_desc = ncols * nrows * (num_ceil + num_floor + 3 * num_sides);
 	if(!(cell_desc = malloc(num_cell_desc * sizeof *cell_desc))) {
 		perror("malloc failed");
 		return -1;
@@ -119,13 +123,21 @@ static int init(void)
 				*dptr++ = rowbits | colbits | (i << DESC_FLOOR_SHIFT);
 			}
 			for(i=0; i<num_sides; i++) {
-				*dptr++ = rowbits | colbits | (i << DESC_W_SHIFT);
+				/* left-side or center: emit the west wall variants */
+				if(x <= ncols/2) {
+					*dptr++ = rowbits | colbits | (i << DESC_W_SHIFT);
+				}
+				/* right-side or center: emit the east wall variants */
+				if(x >= ncols/2) {
+					*dptr++ = rowbits | colbits | (i << DESC_E_SHIFT);
+				}
 			}
 			for(i=0; i<num_sides; i++) {
 				*dptr++ = rowbits | colbits | (i << DESC_N_SHIFT);
 			}
 		}
 	}
+	num_cell_desc = dptr - cell_desc;	/* original num was an upper bound, see above */
 
 	return 0;
 }
@@ -156,7 +168,7 @@ static void display(void)
 		desc &= DESC_TILE_MASK;
 
 		printf("rendering %08x at (%d,%d)\n", desc, col, row);
-		rend->render(-col, row, REND_CLEAR | desc);
+		rend->render(col - ncols / 2, row, REND_CLEAR | desc);
 		rend->show();
 		save_stamp(rend, "out", col, row, desc);
 		glutPostRedisplay();

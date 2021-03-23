@@ -9,25 +9,15 @@
 #include <imago2.h>
 #include "rend.h"
 
+static void *flip_image(int dir, void *pixels, int width, int height);
+
 static unsigned char *tmpbuf;
 static int tmpsz;
 
 int save_stamp(struct renderer *rend, const char *outpath, int x, int y, uint32_t desc)
 {
-	int i, sz;
 	char *fname;
 	DIR *dir;
-	uint32_t *sptr, *dptr;
-
-	sz = rend->width * rend->height * 4;
-	if(!tmpbuf || tmpsz < sz) {
-		free(tmpbuf);
-		if(!(tmpbuf = malloc(sz))) {
-			fprintf(stderr, "save_stamp: failed to allocate temp image (%dx%d)\n", rend->width, rend->height);
-			return -1;
-		}
-		tmpsz = sz;
-	}
 
 	if(outpath) {
 		if(!(dir = opendir(outpath))) {
@@ -50,20 +40,62 @@ int save_stamp(struct renderer *rend, const char *outpath, int x, int y, uint32_
 	printf("saving stamp: %s ... ", fname);
 	fflush(stdout);
 
-	/* flip the image vertically */
-	sptr = (uint32_t*)rend->framebuf + rend->width * rend->height;
-	dptr = (uint32_t*)tmpbuf;
-
-	for(i=0; i<rend->height; i++) {
-		sptr -= rend->width;
-		memcpy(dptr, sptr, rend->width * 4);
-		dptr += rend->width;
-	}
-
 	if(img_save_pixels(fname, tmpbuf, rend->width, rend->height, IMG_FMT_RGBA32) == -1) {
 		printf("failed\n");
 	} else {
 		printf("OK\n");
 	}
 	return 0;
+}
+
+void *vflip_image(void *pixels, int width, int height)
+{
+	return flip_image(0, pixels, width, height);
+}
+
+void *hflip_image(void *pixels, int width, int height)
+{
+	return flip_image(1, pixels, width, height);
+}
+
+static void *flip_image(int dir, void *pixels, int width, int height)
+{
+	int i, j, imgsz, sz;
+	uint32_t *sptr, *dptr;
+
+	imgsz = width * height * 4;
+	sz = imgsz * 2;
+	if(!tmpbuf || tmpsz < sz) {
+		free(tmpbuf);
+		if(!(tmpbuf = malloc(sz))) {
+			fprintf(stderr, "failed to allocate temp image (%dx%d)\n", width, height);
+			return 0;
+		}
+		tmpsz = sz;
+	}
+
+	if(dir == 0) {
+		/* flip the image vertically */
+		sptr = (uint32_t*)pixels + width * height;
+		dptr = (uint32_t*)(pixels == tmpbuf ? tmpbuf + imgsz : tmpbuf);
+
+		for(i=0; i<height; i++) {
+			sptr -= width;
+			memcpy(dptr, sptr, width * 4);
+			dptr += width;
+		}
+	} else {
+		/* flip the image horizontally */
+		sptr = (uint32_t*)pixels + width;
+		dptr = (uint32_t*)(pixels == tmpbuf ? tmpbuf + imgsz : tmpbuf);
+
+		for(i=0; i<height; i++) {
+			for(j=0; j<width; j++) {
+				*dptr++ = *--sptr;
+			}
+			sptr += width * 2;
+		}
+	}
+
+	return tmpbuf;
 }

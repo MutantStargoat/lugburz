@@ -86,6 +86,7 @@ static int prepare(int width, int height, float fov)
 
 static void render(int x, int y, uint32_t desc)
 {
+	unsigned char *tmp;
 	float lpos[] = {0, 1, 0, 1};
 
 	glPushAttrib(GL_VIEWPORT_BIT | GL_ENABLE_BIT);
@@ -118,6 +119,10 @@ static void render(int x, int y, uint32_t desc)
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, rend.framebuf);
+
+	if((tmp = vflip_image(rend.framebuf, rend.width, rend.height))) {
+		memcpy(rend.framebuf, tmp, rend.width * rend.height * 4);
+	}
 }
 
 extern float win_aspect;
