@@ -3,8 +3,8 @@ obj = $(src:.c=.o)
 dep = $(src:.c=.d)
 bin = ded
 
-CFLAGS = -pedantic -Wall -g -MMD
-LDFLAGS = -lGL -lGLU -lglut -limago
+CFLAGS = -pedantic -Wall -g -fcommon -MMD -DTARGET_LEND
+LDFLAGS = -lGL -lGLU -lglut -limago -lm
 
 $(bin): $(obj)
 	$(CC) -o $@ $(obj) $(LDFLAGS)
