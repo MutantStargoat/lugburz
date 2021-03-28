@@ -84,6 +84,9 @@ void gview_draw(void)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	dtx_printf("hello");
+	dtx_flush();
 }
 
 void gview_reshape(int x, int y, int w, int h)

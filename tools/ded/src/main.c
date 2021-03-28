@@ -57,6 +57,13 @@ static int init(int argc, char **argv)
 		return -1;
 	}
 
+	if(!(font = dtx_open_font("font", 0))) {
+		fprintf(stderr, "failed to open font\n");
+		return -1;
+	}
+	dtx_prepare_range(font, 12, 32, 127);
+	dtx_use_font(font, 12);
+
 	if(gview_init() == -1) {
 		return -1;
 	}

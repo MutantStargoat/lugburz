@@ -1,9 +1,8 @@
 #ifndef DED_H_
 #define DED_H_
 
+#include <drawtext.h>
 #include "level.h"
-
-struct level *lvl;
 
 enum {
 	KEY_F1 = 256, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
@@ -11,6 +10,9 @@ enum {
 	KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN,
 	KEY_HOME, KEY_END, KEY_INS, KEY_PGUP, KEY_PGDOWN
 };
+
+struct level *lvl;
+struct dtx_font *font;
 
 void redisplay(void);
 
