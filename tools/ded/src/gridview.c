@@ -37,7 +37,7 @@ void gview_draw(void)
 	float x, y, hsz;
 	struct gridcell *gptr;
 	float aspect = (float)lvl->width / (float)lvl->height;
-	float pixw = 2.0f / vp[2];
+	float pixw = 1.0f / vp[3];
 
 	hsz = zoom * 0.5f;
 
@@ -85,6 +85,8 @@ void gview_draw(void)
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	glScalef(pixw * 2, pixw * 2, 1);
+	glColor3f(1, 1, 1);
 	dtx_printf("hello");
 	dtx_flush();
 }
