@@ -3,6 +3,7 @@
 #include <GL/glut.h>
 #include "ded.h"
 #include "level.h"
+#include "bgtiles.h"
 
 static int init(int argc, char **argv);
 static void cleanup(void);
@@ -18,6 +19,8 @@ static int parse_args(int argc, char **argv);
 
 static int win_width, win_height;
 static int split;
+
+static struct bgtileset *def_tileset;
 
 int main(int argc, char **argv)
 {
@@ -225,6 +228,12 @@ static int parse_args(int argc, char **argv)
 					}
 					break;
 
+				case 't':
+					if(!(def_tileset = get_bgtileset(argv[++i]))) {
+						return -1;
+					}
+					break;
+
 				default:
 					fprintf(stderr, "invalid option: %s\n", argv[i]);
 					return -1;
@@ -253,6 +262,7 @@ static int parse_args(int argc, char **argv)
 			fprintf(stderr, "failed to create level (%dx%d)\n", ncols, nrows);
 			return -1;
 		}
+		lvl->bgset = def_tileset;
 	}
 	return 0;
 }

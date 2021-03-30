@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include "level.h"
+#include "bgtiles.h"
 
 #define MAGIC	"LBLVL0BE"
 
@@ -12,7 +13,7 @@ struct header {
 	unsigned char pad0;
 	unsigned char width, height;
 	unsigned char sx, sy;			/* start pos */
-	char tileset[16];				/* tileset name */
+	char tileset[32];				/* tileset name */
 } __attribute__ ((packed));
 
 
@@ -51,6 +52,8 @@ int load_level(struct level *lvl, const char *fname)
 		fclose(fp);
 		return -1;
 	}
+
+	lvl->bgset = get_bgtileset(hdr.tileset);
 
 	if(init_level(lvl, hdr.width, hdr.height) == -1) {
 		fclose(fp);
@@ -113,7 +116,9 @@ int save_level(struct level *lvl, const char *fname)
 	hdr.height = lvl->height;
 	hdr.sx = lvl->start[0];
 	hdr.sy = lvl->start[1];
-	/* TODO tileset */
+	if(lvl->bgset) {
+		strncpy(hdr.tileset, lvl->bgset->name, sizeof hdr.tileset - 1);
+	}
 
 	if(fwrite(&hdr, sizeof hdr, 1, fp) < 1) {
 		fprintf(stderr, "save_level: failed to write header: %s\n", fname);

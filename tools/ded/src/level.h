@@ -38,12 +38,16 @@ struct gridcell {
 	uint32_t link;
 };
 
+struct bgtileset;
+
 struct level {
 	int width, height;
 	struct gridcell *cells;
 
 	int id;
 	int start[2];
+
+	struct bgtileset *bgset;
 };
 
 

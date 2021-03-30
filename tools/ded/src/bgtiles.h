@@ -1,10 +1,11 @@
 #ifndef BGTILES_H_
 #define BGTILES_H_
 
+#include <stdint.h>
 #include "rbtree.h"
 
 struct bgtile {
-	int id, col, row;
+	int id;
 	int width, height;
 	void *pixels;
 	unsigned int gltex;	/* for the dungeon visualization */
@@ -12,15 +13,18 @@ struct bgtile {
 };
 
 struct bgtileset {
+	char *name;
 	struct bgtile *tiles;
 	int num_tiles;
 
 	struct rbtree *idmap;	/* maps tile ids to indices in the tiles array */
 };
 
-int load_bgtiles(struct bgtileset *tset, const char *dirname);
-void destroy_bgtiles(struct bgtileset *tset);
+int load_bgtiles(struct bgtileset *bgset, const char *dirname);
+void destroy_bgtiles(struct bgtileset *bgset);
 
-struct bgtile *get_bgtile(struct bgtileset *tset, unsigned int id);
+struct bgtileset *get_bgtileset(const char *name);
+
+struct bgtile *get_bgtile(struct bgtileset *bgset, unsigned int desc, int col, int row);
 
 #endif	/* BGTILES_H_ */
