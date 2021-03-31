@@ -39,7 +39,7 @@ struct bgtileset *get_bgtileset(const char *name)
 
 int load_bgtiles(struct bgtileset *bgset, const char *dirname)
 {
-	int i, newsz, col, row;
+	int i, newsz, col, row, idx;
 	uint32_t desc;
 	DIR *dir;
 	struct dirent *dent;
@@ -109,18 +109,26 @@ int load_bgtiles(struct bgtileset *bgset, const char *dirname)
 			rb_inserti(bgset->idmap, bgtile.id, ddnode->data);	/* data is an index */
 			img_free_pixels(bgtile.pixels);
 
-			printf("load_bgtiles: map %08x -> %d\n", bgtile.id, (int)ddnode->data);
+			/*printf("load_bgtiles: map %08x -> %d\n", bgtile.id, (int)ddnode->data);*/
 		} else {
 			/* add the bgtile and insert the index into the tree */
 			if(bgset->num_tiles >= max_tiles) {
+				intptr_t baseoffs;
 				int newmax = max_tiles ? max_tiles * 2 : 8;
 				void *tmp = realloc(bgset->tiles, newmax * sizeof *bgset->tiles);
 				if(!tmp) {
 					fprintf(stderr, "failed to resize tileset array (%d)\n", newmax);
 					goto fail;
 				}
+				baseoffs = (char*)tmp - (char*)bgset->tiles;
 				bgset->tiles = tmp;
 				max_tiles = newmax;
+
+				/* fixup ddup key pointers */
+				rb_begin(ddup);
+				while((ddnode = rb_next(ddup))) {
+					ddnode->key = (char*)ddnode->key + baseoffs;
+				}
 			}
 
 			/* also create the corresponding OpenGL texture */
@@ -131,11 +139,16 @@ int load_bgtiles(struct bgtileset *bgset, const char *dirname)
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bgtile.width, bgtile.height, 0,
 					GL_RGBA, GL_UNSIGNED_BYTE, bgtile.pixels);
 
-			rb_inserti(bgset->idmap, bgtile.id, (void*)bgset->num_tiles);
-			bgset->tiles[bgset->num_tiles++] = bgtile;
+			/* append it to the array */
+			idx = bgset->num_tiles++;
+			bgset->tiles[idx] = bgtile;
 
-			printf("load_bgtiles: add %d: %08x - %s\n", bgset->num_tiles - 1,
-					bgtile.id, path);
+			/* map the id to this tile index */
+			rb_inserti(bgset->idmap, bgtile.id, (void*)idx);
+			/* also insert it in the deduplication tree using the hash as the key */
+			rb_insert(ddup, bgset->tiles[idx].sum, (void*)idx);
+
+			/*printf("load_bgtiles: add %d: %08x - %s\n", idx, bgtile.id, path);*/
 		}
 	}
 	closedir(dir);
@@ -184,5 +197,5 @@ struct bgtile *get_bgtile(struct bgtileset *bgset, unsigned int desc, int col, i
 
 static int hashcmp(const void *ap, const void *bp)
 {
-	return memcmp(ap, bp, 128);
+	return memcmp(ap, bp, 16);
 }
